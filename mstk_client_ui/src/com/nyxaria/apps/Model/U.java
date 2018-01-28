@@ -70,7 +70,7 @@ public class U {
 
         for(HashMap<String, String> e : history) {
 
-            htmlContent += "<tr><td>"+e.get("datetime")+"</td>" + "<td>"+e.getOrDefault("rate", "50")+"</td><" + "<td>"+(Integer.parseInt(e.get("job_time"))/60/60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time"))/60/60 + ":" + ((Integer.parseInt(e.get("job_time"))/60)%60 < 10 ? "0" : "") + (Integer.parseInt(e.get("job_time"))/60)%60 + ":" + (Integer.parseInt(e.get("job_time")) % 60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time")) % 60+"</td>" +
+            htmlContent += "<tr><td>"+e.get("datetime")+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("rate")))+"</td><" + "<td>"+(Integer.parseInt(e.get("job_time"))/60/60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time"))/60/60 + ":" + ((Integer.parseInt(e.get("job_time"))/60)%60 < 10 ? "0" : "") + (Integer.parseInt(e.get("job_time"))/60)%60 + ":" + (Integer.parseInt(e.get("job_time")) % 60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time")) % 60+"</td>" +
                     "<td>"+getFormattedAmount(Integer.parseInt(e.get("amount")))+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("member_store")))+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("pocket_store")))+"</td>" +
                     "<td>"+getFormattedAmount(Integer.parseInt(e.get("member_store")) + Integer.parseInt(e.get("pocket_store")))+"</td></tr>";
         }
