@@ -8,14 +8,14 @@ It provides:
 - Maintenance Mode lockout
 - Error handling
 
-It consists of:
--a UI Written in Java 8
--a Python daemon for controlling relays
--another Python daemon for reading RFID cards and providing an web endpoint.
+It consists of 3 integrated programs:
+- A UI Written in Java 8
+- A Python daemon for controlling relays
+- Another Python daemon for reading RFID cards and providing an web endpoint.
 
 
 Java Library deps (Maven):
 
-cd.connect.common:connect-java-jackson:1.12
+cd.connect.common:connect-java-jackson:1.12<br>
 co.gongzh.procbridge:procbridge:1.0.22
 
