@@ -7,3 +7,15 @@ It provides:
 - Integration with the machinetimed server for billing.
 - Maintenance Mode lockout
 - Error handling
+
+It consists of:
+-a UI Written in Java 8
+-a Python daemon for controlling relays
+-another Python daemon for reading RFID cards and providing an web endpoint.
+
+
+Java Library deps (Maven):
+
+cd.connect.common:connect-java-jackson:1.12
+co.gongzh.procbridge:procbridge:1.0.22
+
