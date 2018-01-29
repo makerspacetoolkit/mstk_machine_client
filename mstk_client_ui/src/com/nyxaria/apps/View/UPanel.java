@@ -138,7 +138,7 @@ public class UPanel extends JPanel {
 
         JPanel buttonPane = new JPanel(new BorderLayout());
 
-        UButton historyButton = new UButton("Job History");
+        UButton historyButton = new UButton("History");
         historyButton.setBorder(BorderFactory.createEmptyBorder(0,0,10,10));
         UButton signoutButton = new UButton("Sign out");
         signoutButton.setBorder(BorderFactory.createEmptyBorder(0,0,10,10));
