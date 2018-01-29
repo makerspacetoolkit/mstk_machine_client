@@ -480,7 +480,7 @@ public class UPanel extends JPanel {
         UButton previousButton = new UButton("previous");
         UButton nextButton = new UButton("next");
         previousButton.setVisible(U.getPageIndex() != 0); //first page on startup
-        nextButton.setVisible(!U.isLastPage()); //first page on startup
+        nextButton.setEnabled(!U.isLastPage()); //first page on startup
         ULabel pageIndexLabel = new ULabel("Page " +(1+U.getPageIndex()),18);
         pageIndexLabel.setBorder(BorderFactory.createEmptyBorder(5,0,0,0));
 
@@ -492,7 +492,7 @@ public class UPanel extends JPanel {
                 previousButton.setVisible(false);
             }
             if(!U.isLastPage()) {
-                nextButton.setVisible(true);
+                nextButton.setEnabled(true);
             }
             pageIndexLabel.setText("Page "+(U.getPageIndex()+1));
         });
@@ -504,7 +504,7 @@ public class UPanel extends JPanel {
                 previousButton.setVisible(true);
             }
             if(U.isLastPage()) {
-                nextButton.setVisible(false);
+                nextButton.setEnabled(false);
             }
             pageIndexLabel.setText("Page "+(U.getPageIndex()+1));
         });
