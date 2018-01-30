@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class ConnectionManager {
 
-    public static final String baseUrl = "http://10.2.2.1:6000";
+    public static final String baseUrl = "http://machinetimed_server:6000";
 
     public static HashMap<String, String> login(String rfid) {
         Map<String, String> params = new HashMap<>();
