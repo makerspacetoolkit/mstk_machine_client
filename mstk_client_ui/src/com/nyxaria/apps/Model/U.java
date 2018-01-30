@@ -20,6 +20,8 @@ public class U {
     private static Frame currentFrame;
     public static UFrame frame;
     private static String currentRFID;
+    private static String hexError;
+    private static int decimalError;
     private static ArrayList<HashMap<String, String>> history;
     public static boolean debugging;
     private static long timerStart;
@@ -238,7 +240,10 @@ public class U {
             if(!debugging)
                 GPIOHandler.writeInterlock(GPIOHandler.LOW);
             setCurrentFrame(Frame.Error);
-            new java.util.Timer().schedule(
+            hexError =  (data.get("error_code").replaceAll("^x", ""));
+            decimalError = Integer.parseInt(hexError, 16);
+            if (decimalError < 128) {
+                new java.util.Timer().schedule(
                     new TimerTask() {
                         @Override
                         public void run() {
@@ -246,7 +251,17 @@ public class U {
                         }
                     },
                     6000
-            );
+                ); } else {
+                    new java.util.Timer().schedule(
+                        new TimerTask() {
+                            @Override
+                            public void run() {
+                                setCurrentFrame(Frame.Scan);
+                            }
+                        },
+                        6000
+                );
+            }
         }
     }
 
