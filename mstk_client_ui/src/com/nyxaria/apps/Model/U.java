@@ -16,7 +16,7 @@ public class U {
 
     private static int historyPageIndex;
     public static HashMap<String, String> data = new HashMap<>();
-    public static HashMap<String, String> meta;
+    public static ArrayList<HashMap<String, String>> meta;
     private static Frame currentFrame;
     public static UFrame frame;
     private static String currentRFID;
@@ -37,7 +37,7 @@ public class U {
     }
 
     public static String getErrorMessage() {
-        return meta.get(data.get("error_code"));
+        return meta.get(0).get(data.get("error_code"));
     }
 
     public static void nextPage() {
@@ -87,7 +87,7 @@ public class U {
     }
 
     public static String getMachine() {
-        return meta.get("access_point");
+        return meta.get(0).get("access_point");
     }
 
 
@@ -199,7 +199,8 @@ public class U {
         jobTime = 0;
         timerStart = 0;
 
-        GPIOHandler.writeInterlock(GPIOHandler.LOW);
+        if (!debugging)
+            GPIOHandler.writeInterlock(GPIOHandler.LOW);
 
         new java.util.Timer().schedule(
                 new TimerTask() {

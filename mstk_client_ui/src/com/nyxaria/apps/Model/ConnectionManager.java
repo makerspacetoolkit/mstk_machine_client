@@ -28,10 +28,8 @@ public class ConnectionManager {
         return POST(baseUrl + "/machine/job", params);
     }
 
-    public static HashMap<String, String> getMeta() {
-        Map<String, String> params = new HashMap<>();
-
-        return POST(baseUrl + "/environment", params);
+    public static ArrayList<HashMap<String, String>> getMeta() {
+        return GET(baseUrl + "/environment");
     }
 
     public static ArrayList<HashMap<String, String>> getHistory(String rfid, int pageIndex) {
