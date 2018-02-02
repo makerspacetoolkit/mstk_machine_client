@@ -11,6 +11,8 @@ import java.util.Map;
 public class ConnectionManager {
 
     public static final String baseUrl = "http://machinetimed_server:6000";
+    public static String apikey;
+    public static String urlWtihApiKey;
 
     public static HashMap<String, String> login(String rfid) {
         Map<String, String> params = new HashMap<>();
@@ -38,11 +40,15 @@ public class ConnectionManager {
 
     public static ArrayList<HashMap<String, String>> GET(String url) {
         ArrayList<HashMap<String, String>> result = new ArrayList<>();
-
+        if (url.indexOf('?') >= 0) {
+            urlWtihApiKey = url.concat("&apikey=" + apikey);
+        } else {
+            urlWtihApiKey = url.concat("?apikey=" + apikey);
+        }
         try {
-            HttpUtility.sendGetRequest(url);
+            HttpUtility.sendGetRequest(urlWtihApiKey);
             String response = HttpUtility.readSingleLineRespone().replace("]","");
-            //System.out.println(response);
+     //       System.out.println(response);
             ArrayList<String> historyRaw = new ArrayList<>();
             while(response.contains("}")) {
                 historyRaw.add(response.substring(response.indexOf("{"), response.indexOf("}")+1));
@@ -63,6 +69,7 @@ public class ConnectionManager {
 
     public static HashMap<String, String> POST(String url, Map<String, String> params) {
         HashMap<String,String> result = null;
+        params.put("apikey", apikey);
 
         try {
             HttpUtility.sendPostRequest(url, params);
