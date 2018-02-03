@@ -269,7 +269,7 @@ public class U {
 
     public static void triggerFilterPinChanged(int state) {
         if(state == 1) {
-            if(currentFrame != Frame.JobStarting && currentFrame != Frame.JobInProgress) {
+            if(currentFrame != Frame.JobStarting && currentFrame != Frame.JobInProgress && data.get("error_code").equals("x00")) {
                 timerStart = System.currentTimeMillis();
 
                 setCurrentFrame(Frame.JobStarting);
