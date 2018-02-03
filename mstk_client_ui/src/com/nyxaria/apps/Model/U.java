@@ -67,13 +67,13 @@ public class U {
         String htmlContent = "<html><body><table border = '1'>";
 
         htmlContent += "<tr><td>Date / Time</td>"  + "<td>Rate</td>" +
-                "<td>Job Time</td>" + "<td>Amount</td>" + "<td>Member $$$</td>" +
-                "<td>Machine $$$</td>" + "<td>Total</td></tr>";
+                "<td>Job Time</td>" + "<td>Amount</td>" + "<td>Member $</td>" +
+                "<td>Machine $</td>" + "<td>Total</td></tr>";
 
         for(HashMap<String, String> e : history) {
 
             htmlContent += "<tr><td>"+e.get("datetime")+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("rate")))+"</td><" + "<td>"+(Integer.parseInt(e.get("job_time"))/60/60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time"))/60/60 + ":" + ((Integer.parseInt(e.get("job_time"))/60)%60 < 10 ? "0" : "") + (Integer.parseInt(e.get("job_time"))/60)%60 + ":" + (Integer.parseInt(e.get("job_time")) % 60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time")) % 60+"</td>" +
-                    "<td>"+getFormattedAmount(Integer.parseInt(e.get("amount")))+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("member_store")))+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("pocket_store")))+"</td>" +
+                    "<td>"+(Integer.parseInt(e.get("is_debit")) == 1 ? getFormattedAmount(-(Integer.parseInt(e.get("amount")))) : getFormattedAmount(Integer.parseInt(e.get("amount"))))+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("member_store")))+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("pocket_store")))+"</td>" +
                     "<td>"+getFormattedAmount(Integer.parseInt(e.get("member_store")) + Integer.parseInt(e.get("pocket_store")))+"</td></tr>";
         }
 
