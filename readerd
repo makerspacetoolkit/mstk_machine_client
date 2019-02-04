@@ -1,0 +1,165 @@
+#!/usr/bin/env python3
+# readerd: Reads RFID cards at machine terminal as a login method for users.
+# Flask enpoint is provided for remote login, troubleshooting and simulating jobs 
+# ProcBridge client talks to the Java UI
+
+# - This uses the 24v air filter signal to determine jobtime.
+# - We're adding 2 min of extra air filter time after the job is over. 
+# - Use another relay in series with 24v air filter control to toggle
+# air assist.
+
+import signal
+import time
+from pirc522 import RFID
+import RPi.GPIO as GPIO
+import sys
+import os
+import datetime
+from flask import Flask, request, url_for, abort
+import _thread
+from procbridge import  procbridge
+
+run = True
+rdr = RFID()
+util = rdr.util()
+util.debug = True
+
+air_filter_sense = 40
+air_filter_power = 36
+
+proc_host = '127.0.0.1'
+client_port = 8877
+client = procbridge.ProcBridge(proc_host, client_port)
+
+
+# makes Flask stfu
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
+# quiets GPIO warnings
+GPIO.setwarnings(False)
+
+card_serial = ""
+card_serialold = ""
+count_error = 0
+
+
+def setup():
+      print('GPIO setup')
+      GPIO.setmode(GPIO.BOARD)
+      GPIO.setup(air_filter_sense, GPIO.IN)
+      GPIO.setup(air_filter_power, GPIO.OUT)
+
+def teardown():
+      global run
+      run = False
+      rdr.cleanup()
+      print('GPIO teardown')
+      GPIO.cleanup()
+
+def two_min_air_filter():
+    GPIO.output(air_filter_power,GPIO.HIGH)
+    time.sleep(120)
+    GPIO.output(air_filter_power,GPIO.LOW)
+
+def read_rfid_gpio():
+  while run:
+    (error, data) = rdr.request()
+    if not error:
+        state = "noerror"
+    (error, back_data, uid)  = rdr.anticoll()
+    if not error:
+        card_serial = rdr.list2HexStr(uid)
+        card_serial = str(int(card_serial,16))
+        print("decimal "+str(card_serial)) 
+        if len(card_serial) == 10 or 9 or 8:
+            print('{"uuid":"%s"}' % card_serial)
+            print(client.request('echo', {"uuid":card_serial}))
+        else: 
+               print("not 10 or 8 length")
+    #read sense pin           
+    #pin_state = 1 if GPIO.input(air_filter_sense) == HIGH else 0
+    pin_state =  GPIO.input(air_filter_sense) 
+    previous_sense_state = pin_state
+    if previous_sense_state != pin_state:
+       print(client.request('echo', {"job":pin_state}))
+    # add extra filter time
+    if previous_sense_state != pin_state and pin_state == 0:
+       _thread.start_new_thread(two_min_air_filter,())
+    # wait a bit before next read will be started
+    time.sleep(.1)
+
+# Initialize the Flask application
+app = Flask(__name__)
+#app.config['DEBUG'] = True
+app.config.update(
+    JSONIFY_PRETTYPRINT_REGULAR=False
+)
+
+mylogfile = ('/var/log/%s.access.log' % os.path.basename(__file__))
+log_level = 5 
+
+machine_dict = {"4":"Laser","5":"CNC"}
+
+def debug_message(current_log_level, message_level, message):
+    timestamp = time.strftime('%Y%m%d_%H:%M:%S') 
+    if message_level <= current_log_level:
+       print('%s - %s' % (timestamp, message))
+       logfile = open(mylogfile, "a");
+       logfile.write("%s - %s" % (timestamp, message)) 
+       logfile.write("\n") 
+       logfile.close()  
+
+
+@app.route('/client', methods = ['POST'])
+def accept_card_uid():
+    if request.method == 'POST':
+        #print("this is a POST")
+        try:
+           card_serial = (request.form['uuid'])
+           if len(card_serial) == 10 or 9 or 8:
+               print(client.request('echo', {"uuid":card_serial}))
+               return str('ok')
+           else: 
+               print("not 10 or 8 length")
+        except:
+           pass 
+        try:    
+           job_state = (request.form['job'])
+           if job_state == "1" or "0":
+               print(client.request('echo', {"job":job_state}))
+               # for quick and dirty testing of interlockd, uncomment and change port
+               #print(client.request('echo', {"pin":job_state}))
+               return str('ok')
+        except:
+            pass
+        try:
+           in_service = (request.form['in_service'])
+           if in_service == "1" or "0":
+              print(client.request('echo', {"in_service":in_service}))
+              return str('ok')
+        except:
+            pass
+        #machine_serial = "4" #(request.form['machine'])
+        #debug_message(log_level,6, "POST to /machine with card id: %s on the %s" % (card_serial,machine_dict[machine_serial]))
+
+_thread.start_new_thread(read_rfid_gpio,())
+   
+if __name__ == '__main__':
+  setup()
+  app.run(
+
+        host="0.0.0.0",
+        port=int("7000"),
+  )
+  try:
+    for line in sys.stdin:
+       if line.strip() == 'exit':
+          break
+  except KeyboardInterrupt:
+     pass
+
+  teardown()
+  print('goodbye')
+
