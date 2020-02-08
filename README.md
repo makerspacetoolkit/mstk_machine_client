@@ -1,6 +1,6 @@
 # mstk_machine_client
 
-A collection of programs designed to run on an RFID enabled Raspberry Pi which is integrated into a (premuim)makerspace tool.
+A collection of programs designed to run on an RFID enabled Raspberry Pi which is integrated into a (premuim)makerspace tools. eg. CNC, laser cutter, 3D printers, etc.
 
 It provides:
 - Access control based on various criteria

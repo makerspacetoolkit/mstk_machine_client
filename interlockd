@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+# interlockd: Provides a ProcBridge server for the Java UI to toggle an
+# an enabling circut, such as a laser-cutter interlock. It responds with 
+# a ProcBridge client call.
+
+import RPi.GPIO as GPIO
+import signal
+import time
+import sys
+import os
+import datetime
+from procbridge import  procbridge
+
+proc_host = '127.0.0.1'
+java_client_port = 8877
+interlock_server_port = 7788
+
+client = procbridge.ProcBridge(proc_host, java_client_port)
+
+# quiets GPIO messages 
+GPIO.setwarnings(False)
+
+mylogfile = ('/var/log/%s.access.log' % os.path.basename(__file__))
+log_level = 4 
+
+machine_dict = {"4":"Laser","5":"CNC"}
+
+#  using Normally Open relay 
+interlock = 33 
+
+def setup():
+      print('GPIO setup')
+      GPIO.setmode(GPIO.BOARD)       
+      GPIO.setup(interlock, GPIO.OUT)   
+
+def teardown():
+      print('GPIO teardown')
+      GPIO.output(interlock, GPIO.LOW)   
+      GPIO.cleanup() 
+
+def debug_message(current_log_level, message_level, message):
+    timestamp = time.strftime('%Y%m%d_%H:%M:%S') 
+    if message_level <= current_log_level:
+       #print('%s - %s' % (timestamp, message))
+       logfile = open(mylogfile, "a");
+       logfile.write("%s - %s" % (timestamp, message)) 
+       logfile.write("\n") 
+       logfile.close()  
+
+if __name__ == '__main__':
+
+  setup()  
+
+  # define request handler
+  def request_handler(api: str, arg: dict) -> dict:
+
+      if api == 'echo':
+          try:
+              if 'pin' in arg:
+                if arg['pin'] == 1:
+                   print('arg pin is %s' % arg['pin'])
+                   GPIO.output(interlock,GPIO.HIGH)
+                   current_state = GPIO.input(interlock)
+                   print('current state is now %s' % current_state)
+                   debug_message(log_level,3, "Current pin state is now %s" % current_state)
+                   print(client.request('echo', {'pin':current_state}))
+                if arg['pin'] == 0:
+                   print('arg pin is %s' % arg['pin'])
+                   GPIO.output(interlock,GPIO.LOW)
+                   current_state = GPIO.input(interlock)
+                   print('current state is now %s' % current_state)
+                   debug_message(log_level,3, "Current pin state is now %s" % current_state)
+                   print(client.request('echo', {'pin':current_state}))
+              else:
+                 print('no pin paramter')
+          except:              
+             print('oh dear.')
+          return arg
+      else:
+          print('unknown api')
+
+  # start socket server
+  server = procbridge.ProcBridgeServer(proc_host, interlock_server_port, request_handler)
+  server.start()
+  print('listening...')
+
+  try:
+      for line in sys.stdin:
+          if line.strip() == 'exit':
+              break
+  except KeyboardInterrupt:
+      pass
+
+  teardown()
+  server.stop()
+  print('bye')
+
+
