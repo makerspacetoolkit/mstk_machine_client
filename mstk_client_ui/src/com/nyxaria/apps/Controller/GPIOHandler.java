@@ -31,4 +31,14 @@ public class GPIOHandler {
             e.printStackTrace();
         }
     }
+
+    public static void writeFilterAlarmState(int state) {
+        JSONObject resp;
+        try {
+            resp = pb.request("echo", "{filter_alarm:"+state+"}");
+            System.out.println(resp); // prints "{}"
+        } catch (ProcBridgeException e) {
+            e.printStackTrace();
+        }
+    }
 }

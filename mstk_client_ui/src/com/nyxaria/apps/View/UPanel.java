@@ -49,6 +49,9 @@ public class UPanel extends JPanel {
             case Maintainance:
                 setupMaintainance();
                 break;
+            case FilterAlarm:
+                setupFilterAlarm();
+                break;
         }
 
         turnTransparent(getComponents());
@@ -210,7 +213,7 @@ public class UPanel extends JPanel {
         JPanel contentWrap = new JPanel(new GridBagLayout());
         contentWrap.setPreferredSize(new Dimension(UFrame.WIDTH-200, (int) contentWrap.getPreferredSize().getHeight()));
 
-        ULabel contentLabel = new ULabel("<html><center>Job starting...<br>It’s your responsibility to make sure you have enough credits to complete your job!!!</center></html>", mediumFont);
+       ULabel contentLabel = new ULabel("<html><center>Job starting...<br>Please make sure you have enough credits to complete your job.</center></html>", mediumFont);
         contentLabel.setPreferredSize(new Dimension(UFrame.WIDTH-100, (int) 150));
         contentWrap.add(contentLabel);
 
@@ -402,6 +405,44 @@ public class UPanel extends JPanel {
 
         //finish
         add(titleWrap, BorderLayout.NORTH);
+        add(contentWrap, BorderLayout.CENTER);
+        add(trailingWrap, BorderLayout.SOUTH);
+    }
+
+    private void setupFilterAlarm() {
+
+        setLayout(new BorderLayout());
+
+        //content
+        JPanel contentWrap = new JPanel(new GridBagLayout());
+        contentWrap.setPreferredSize(new Dimension(UFrame.WIDTH-200, (int) contentWrap.getPreferredSize().getHeight()));
+
+        ULabel contentLabel = new ULabel("<html><center>There is a problem with the air filter!<br>You have 60 seconds to pause your job before it gets canceled.", smallFont+10);
+        contentLabel.setPreferredSize(new Dimension(UFrame.WIDTH-100, (int) 150));
+        contentWrap.add(contentLabel);
+
+        //trailing
+        JPanel trailingWrap = new JPanel(new GridBagLayout());
+
+        UButton okButton = new UButton("OK");
+
+        okButton.addActionListener(e -> U.finaliseSignout());
+        okButton.addActionListener(e -> U.triggerFilterAlarm(false));
+        okButton.addActionListener(e -> U.triggerInService(false));
+
+        JPanel buttonWrap = new JPanel();
+        buttonWrap.setLayout(new BoxLayout(buttonWrap, BoxLayout.X_AXIS));
+
+        buttonWrap.add(okButton);
+        //add(buttonWrap, BorderLayout.EAST);
+        int x = 100;
+        buttonWrap.add(new Box.Filler(new Dimension(x,10),new Dimension(x,10),new Dimension(x,10)));
+        buttonWrap.setBorder(BorderFactory.createEmptyBorder(0,0,20,0));
+
+        trailingWrap.add(buttonWrap);
+
+        //finish
+       // add(titleWrap, BorderLayout.NORTH);
         add(contentWrap, BorderLayout.CENTER);
         add(trailingWrap, BorderLayout.SOUTH);
     }

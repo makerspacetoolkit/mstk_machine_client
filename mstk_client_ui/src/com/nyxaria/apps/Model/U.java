@@ -281,7 +281,7 @@ public class U {
                                     setCurrentFrame(Frame.JobInProgress);
                             }
                         },
-                        4000
+                        7000
                 );
             }
         } else {
@@ -330,7 +330,31 @@ public class U {
         }
     }
 
+    public static void triggerFilterAlarm(boolean alarmState) {
+        System.out.println("This is triggerFilterAlarm");
+        if(alarmState) {
+            if(!debugging)
+                System.out.println("Alarm state is: "+alarmState);
+                GPIOHandler.writeFilterAlarmState(1);
+                meta = ConnectionManager.getMeta();
+                setCurrentFrame(Frame.FilterAlarm);
 
+                new java.util.Timer().schedule(
+                    new TimerTask() {
+                        @Override
+                        public void run() {
+                            GPIOHandler.writeInterlock(0);
+                        }
+                    },
+                    60000
+                 );
+
+        } else {
+            if(!debugging)
+                 System.out.println("Alarm state is: "+alarmState);
+                 GPIOHandler.writeFilterAlarmState(0);
+        }
+    }
 
 
     public static String getJobID() {
@@ -348,6 +372,6 @@ public class U {
 
     public enum Frame {
         Scan, Welcome, JobStarting, JobInProgress, JobComplete,
-        Goodbye, Error, ConfirmSignout, Maintainance, History
+        Goodbye, Error, ConfirmSignout, Maintainance, History, FilterAlarm
     }
 }
