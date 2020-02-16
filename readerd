@@ -148,8 +148,6 @@ app.config.update(
 mylogfile = ('/var/log/%s.access.log' % os.path.basename(__file__))
 log_level = 5 
 
-machine_dict = {"4":"Laser","5":"CNC"}
-
 def debug_message(current_log_level, message_level, message):
     timestamp = time.strftime('%Y%m%d_%H:%M:%S') 
     if message_level <= current_log_level:
@@ -202,8 +200,6 @@ def accept_card_uid():
               return str('ok')
         except:
             pass
-        #machine_serial = "4" #(request.form['machine'])
-        #debug_message(log_level,6, "POST to /machine with card id: %s on the %s" % (card_serial,machine_dict[machine_serial]))
 
 _thread.start_new_thread(read_rfid_gpio,())
    
@@ -224,8 +220,6 @@ if __name__ == '__main__':
   teardown()
   print('goodbye')
 
-        #machine_serial = "4" #(request.form['machine'])
-        #debug_message(log_level,6, "POST to /machine with card id: %s on the %s" % (card_serial,machine_dict[machine_serial]))
 
 _thread.start_new_thread(read_rfid_gpio,())
    
