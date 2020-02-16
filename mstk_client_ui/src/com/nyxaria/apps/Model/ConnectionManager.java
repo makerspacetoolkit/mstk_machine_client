@@ -48,7 +48,7 @@ public class ConnectionManager {
         try {
             HttpUtility.sendGetRequest(urlWtihApiKey);
             String response = HttpUtility.readSingleLineRespone().replace("]","");
-     //       System.out.println(response);
+            System.out.println(response);
             ArrayList<String> historyRaw = new ArrayList<>();
             while(response.contains("}")) {
                 historyRaw.add(response.substring(response.indexOf("{"), response.indexOf("}")+1));

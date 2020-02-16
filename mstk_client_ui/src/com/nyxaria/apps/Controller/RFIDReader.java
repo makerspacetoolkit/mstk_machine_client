@@ -25,7 +25,8 @@ public class RFIDReader {
                     U.triggerFilterPinChanged(arg.get("job").equals("1") ? 1 : 0);
                 } else if(arg.has("in_service")) {
                     U.triggerInService(arg.get("in_service").equals("1"));
-
+                } else if(arg.has("filter_alarm")) {
+                    U.triggerFilterAlarm(arg.get("filter_alarm").equals("1"));
                 }
                 return arg;
             }

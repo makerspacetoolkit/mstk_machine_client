@@ -66,13 +66,13 @@ public class U {
 
         String htmlContent = "<html><body><table border = '1'>";
 
-        htmlContent += "<tr><td>Date / Time</td>"  + "<td>Rate</td>" +
+        htmlContent += "<tr><td>Date / Time</td>" + "<td>Tool</td>" + "<td>Rate</td>" +
                 "<td>Job Time</td>" + "<td>Amount</td>" + "<td>Member $</td>" +
                 "<td>Machine $</td>" + "<td>Total</td></tr>";
 
         for(HashMap<String, String> e : history) {
 
-            htmlContent += "<tr><td>"+e.get("datetime")+"</td>" + "<td>"+(Integer.parseInt(e.get("rate")) == 0 ? "" : getFormattedAmount(Integer.parseInt(e.get("rate"))))+"</td><" + "<td>"+(Integer.parseInt(e.get("job_time")) == 0 ? "" : (Integer.parseInt(e.get("job_time"))/60/60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time"))/60/60 + ":" + ((Integer.parseInt(e.get("job_time"))/60)%60 < 10 ? "0" : "") + (Integer.parseInt(e.get("job_time"))/60)%60 + ":" + (Integer.parseInt(e.get("job_time")) % 60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time")) % 60)+"</td>" +
+                    htmlContent += "<tr><td>"+e.get("datetime")+"</td>" + "<td>"+(Integer.parseInt(e.get("is_debit")) == 1 ? (Integer.parseInt(e.get("machine_id")) != 0 ? meta.get(0).get(e.get("machine_id")) : "") : "")+"</td>" + "<td>"+(Integer.parseInt(e.get("rate")) == 0 ? "" : getFormattedAmount(Integer.parseInt(e.get("rate"))))+"</td><" + "<td>"+(Integer.parseInt(e.get("job_time")) == 0 ? "" : (Integer.parseInt(e.get("job_time"))/60/60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time"))/60/60 + ":" + ((Integer.parseInt(e.get("job_time"))/60)%60 < 10 ? "0" : "") + (Integer.parseInt(e.get("job_time"))/60)%60 + ":" + (Integer.parseInt(e.get("job_time")) % 60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time")) % 60)+"</td>" +
                     "<td>"+(Integer.parseInt(e.get("is_debit")) == 1 ? getFormattedAmount(-(Integer.parseInt(e.get("amount")))) : getFormattedAmount(Integer.parseInt(e.get("amount"))))+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("member_store")))+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("pocket_store")))+"</td>" +
                     "<td>"+getFormattedAmount(Integer.parseInt(e.get("member_store")) + Integer.parseInt(e.get("pocket_store")))+"</td></tr>";
         }
@@ -87,9 +87,9 @@ public class U {
     }
 
     public static String getMachine() {
-        return meta.get(0).get("access_point");
+        String ap_id = meta.get(0).get("access_point_id");
+        return meta.get(0).get(ap_id);
     }
-
 
     public static String getMachineNumber() {
         return data.get("access_point");
@@ -281,7 +281,7 @@ public class U {
                                     setCurrentFrame(Frame.JobInProgress);
                             }
                         },
-                        4000
+                        7000
                 );
             }
         } else {
@@ -330,7 +330,31 @@ public class U {
         }
     }
 
+    public static void triggerFilterAlarm(boolean alarmState) {
+        System.out.println("This is triggerFilterAlarm");
+        if(alarmState) {
+            if(!debugging)
+                System.out.println("Alarm state is: "+alarmState);
+                GPIOHandler.writeFilterAlarmState(1);
+                meta = ConnectionManager.getMeta();
+                setCurrentFrame(Frame.FilterAlarm);
 
+                new java.util.Timer().schedule(
+                    new TimerTask() {
+                        @Override
+                        public void run() {
+                            GPIOHandler.writeInterlock(0);
+                        }
+                    },
+                    60000
+                 );
+
+        } else {
+            if(!debugging)
+                 System.out.println("Alarm state is: "+alarmState);
+                 GPIOHandler.writeFilterAlarmState(0);
+        }
+    }
 
 
     public static String getJobID() {
@@ -348,6 +372,6 @@ public class U {
 
     public enum Frame {
         Scan, Welcome, JobStarting, JobInProgress, JobComplete,
-        Goodbye, Error, ConfirmSignout, Maintainance, History
+        Goodbye, Error, ConfirmSignout, Maintainance, History, FilterAlarm
     }
 }
