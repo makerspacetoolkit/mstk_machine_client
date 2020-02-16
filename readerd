@@ -10,7 +10,7 @@
 
 import signal
 import time
-from pirc522 import RFID
+import MFRC522
 import RPi.GPIO as GPIO
 import sys
 import os
@@ -25,10 +25,8 @@ spi.open(1, 2)
 spi.max_speed_hz = 100000
 spi.mode = 0b00
 
-run = True
-rdr = RFID()
-util = rdr.util()
-util.debug = True
+# Create an object of the class MFRC522
+MIFAREReader = MFRC522.MFRC522()
 
 air_filter_sense = 16
 air_filter_power = 15
@@ -49,6 +47,7 @@ GPIO.setwarnings(False)
 card_serial = ""
 card_serialold = ""
 count_error = 0
+
 alarm_state = 0
 previous_sense_state = 0
 
@@ -79,47 +78,51 @@ def turbine_state():
     x = 0 
     total_amps = 0
     while x <= 100:
-        resp = spi.xfer2([0x00, 0x00]) 
+        resp = spi.xfer2([0x00, 0x00])
         w = resp[0]
         w <<= 8
-        w |= resp[1] 
-        refV = 3.3  
+        w |= resp[1]
+        refV = 3.3
         lsb = refV/4096
         mV= (w-2048)*lsb*1000
-        amps = abs( mV/66)  
-        #print('amps is: %s' % amps)  
-        total_amps = amps + total_amps 
+        amps = abs( mV/66 )
+        #print('amps is: %s' % amps)
+        total_amps = amps + total_amps
         #print('total_amps is: %s' % total_amps)
-        #print(x)                              
-        x = x + 1                            
-     #   time.sleep(1)                      
-    avg = ( total_amps / 100)              
-    #print('average is %s' %  avg)         
-    if avg > .1:                         
-        #print("we're on.")              
+        #print(x)
+        x = x + 1
+     #   time.sleep(1)
+    avg = ( total_amps / 100)
+    #print('average is %s' %  avg)
+    if avg > .1:
+        #print("we're on.")
         return 1
-    else:                              
+    else:
         #print("we're off.")
         alarm_state = 1
         return 0
 
 def read_rfid_gpio():
-  global alarm_state  
+  global alarm_state
   global previous_sense_state
-  while run:
-    (error, data) = rdr.request()
-    if not error:
-        state = "noerror"
-    (error, back_data, uid)  = rdr.anticoll()
-    if not error:
-        card_serial = rdr.list2HexStr(uid)
-        card_serial = str(int(card_serial,16))
-        print("decimal "+str(card_serial)) 
-        if len(card_serial) == 10 or 9 or 8:
+  while 1:
+    (status,TagType,CardTypeRec) = MIFAREReader.MFRC522_Request(MIFAREReader.PICC_REQIDL)
+    if status == MIFAREReader.MI_OK:
+       cardTypeNo = CardTypeRec[1]*256+CardTypeRec[0]
+       (status,uid,uidData) = MIFAREReader.MFRC522_Anticoll()
+       if status == MIFAREReader.MI_OK:
+         count_error = 0
+         print(uidData)
+         card_serial = MIFAREReader.list2HexStr(uidData)
+         card_serial = str(int(card_serial,16))
+         print(card_serial)
+         # wait one sec. befor next read will be started
+         time.sleep(1)
+         if len(card_serial) == 10 or 9 or 8:
             print('{"uuid":"%s"}' % card_serial)
             print(client.request('echo', {"uuid":card_serial}))
-        else: 
-               print("not 10 or 8 length")
+         else: 
+            print("not 10 or 8 length")
     #read filter sense pin (inverted because of pullup) and current          
     filter_pin_state = int(not GPIO.input(air_filter_sense)) 
    # print(filter_pin_state)
