@@ -113,7 +113,7 @@ public class UPanel extends JPanel {
         memberCreditLabel.setBorder(BorderFactory.createEmptyBorder(50,0,0,0));
 
         ULabel machineCreditLabel = new ULabel("Machine Credit: " + U.getMachineCredit(), mediumFont);
-        ULabel totalLabel = new ULabel("Total: " + U.getTotal(), mediumFont);
+        ULabel totalLabel = new ULabel("Total Credit: " + U.getTotal(), mediumFont);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
@@ -466,7 +466,7 @@ public class UPanel extends JPanel {
 
         ULabel memberCreditLabel = new ULabel("Member Credit: " + U.getMemberCredit(), mediumFont);
         ULabel machineCreditLabel = new ULabel("Machine Credit: " + U.getMachineCredit(), mediumFont);
-        ULabel totalLabel = new ULabel("Total: " + U.getTotal(), mediumFont);
+        ULabel totalLabel = new ULabel("Total Credit: " + U.getTotal(), mediumFont);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));

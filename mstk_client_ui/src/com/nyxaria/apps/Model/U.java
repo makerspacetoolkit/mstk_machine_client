@@ -66,13 +66,13 @@ public class U {
 
         String htmlContent = "<html><body><table border = '1'>";
 
-        htmlContent += "<tr><td>Date / Time</td>" + "<td>Tool</td>" + "<td>Rate</td>" +
+        htmlContent += "<tr><td>Date / Time</td>" + "<td>Trxn</td>" + "<td>Rate</td>" +
                 "<td>Job Time</td>" + "<td>Amount</td>" + "<td>Member $</td>" +
-                "<td>Machine $</td>" + "<td>Total</td></tr>";
+                "<td>Machine $</td>" + "<td>Total Cr</td></tr>";
 
         for(HashMap<String, String> e : history) {
 
-                    htmlContent += "<tr><td>"+e.get("datetime")+"</td>" + "<td>"+(Integer.parseInt(e.get("is_debit")) == 1 ? (Integer.parseInt(e.get("machine_id")) != 0 ? meta.get(0).get(e.get("machine_id")) : "") : "")+"</td>" + "<td>"+(Integer.parseInt(e.get("rate")) == 0 ? "" : getFormattedAmount(Integer.parseInt(e.get("rate"))))+"</td><" + "<td>"+(Integer.parseInt(e.get("job_time")) == 0 ? "" : (Integer.parseInt(e.get("job_time"))/60/60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time"))/60/60 + ":" + ((Integer.parseInt(e.get("job_time"))/60)%60 < 10 ? "0" : "") + (Integer.parseInt(e.get("job_time"))/60)%60 + ":" + (Integer.parseInt(e.get("job_time")) % 60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time")) % 60)+"</td>" +
+                    htmlContent += "<tr><td>"+e.get("datetime")+"</td>" + "<td>"+(Integer.parseInt(e.get("is_debit")) == 1 ? (Integer.parseInt(e.get("machine_id")) != 0 ? meta.get(0).get(e.get("machine_id")) : "") : "(Cr)")+"</td>" + "<td>"+(Integer.parseInt(e.get("rate")) == 0 ? "" : getFormattedAmount(Integer.parseInt(e.get("rate"))))+"</td><" + "<td>"+(Integer.parseInt(e.get("job_time")) == 0 ? "" : (Integer.parseInt(e.get("job_time"))/60/60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time"))/60/60 + ":" + ((Integer.parseInt(e.get("job_time"))/60)%60 < 10 ? "0" : "") + (Integer.parseInt(e.get("job_time"))/60)%60 + ":" + (Integer.parseInt(e.get("job_time")) % 60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time")) % 60)+"</td>" +
                     "<td>"+(Integer.parseInt(e.get("is_debit")) == 1 ? getFormattedAmount(-(Integer.parseInt(e.get("amount")))) : getFormattedAmount(Integer.parseInt(e.get("amount"))))+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("member_store")))+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("pocket_store")))+"</td>" +
                     "<td>"+getFormattedAmount(Integer.parseInt(e.get("member_store")) + Integer.parseInt(e.get("pocket_store")))+"</td></tr>";
         }
