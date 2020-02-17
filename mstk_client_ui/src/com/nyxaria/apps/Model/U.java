@@ -67,8 +67,8 @@ public class U {
         String htmlContent = "<html><body><table border = '1'>";
 
         htmlContent += "<tr><td>Date / Time</td>" + "<td>Trxn</td>" + "<td>Rate</td>" +
-                "<td>Job Time</td>" + "<td>Amount</td>" + "<td>Member $</td>" +
-                "<td>Machine $</td>" + "<td>Total Cr</td></tr>";
+                "<td>Job Time</td>" + "<td>Amount</td>" + "<td>Mem Cr</td>" +
+                "<td>Mach Cr</td>" + "<td>Total Cr</td></tr>";
 
         for(HashMap<String, String> e : history) {
 
