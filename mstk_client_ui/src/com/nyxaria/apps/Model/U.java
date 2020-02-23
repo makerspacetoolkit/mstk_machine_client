@@ -67,12 +67,13 @@ public class U {
         String htmlContent = "<html><body><table border = '1'>";
 
         htmlContent += "<tr><td>Date / Time</td>" + "<td>Trxn</td>" + "<td>Rate</td>" +
-                "<td>Job Time</td>" + "<td>Amount</td>" + "<td>Member $</td>" +
-                "<td>Machine $</td>" + "<td>Total Cr</td></tr>";
+                "<td>Job Time</td>" + "<td>Amount</td>" + "<td>Mem Cr</td>" +
+                "<td>Mach Cr</td>" + "<td>Total Cr</td></tr>";
 
         for(HashMap<String, String> e : history) {
+                    String machine_name =  meta.get(0).get(e.get("machine_id"));
 
-                    htmlContent += "<tr><td>"+e.get("datetime")+"</td>" + "<td>"+(Integer.parseInt(e.get("is_debit")) == 1 ? (Integer.parseInt(e.get("machine_id")) != 0 ? meta.get(0).get(e.get("machine_id")) : "") : "(Cr)")+"</td>" + "<td>"+(Integer.parseInt(e.get("rate")) == 0 ? "" : getFormattedAmount(Integer.parseInt(e.get("rate"))))+"</td><" + "<td>"+(Integer.parseInt(e.get("job_time")) == 0 ? "" : (Integer.parseInt(e.get("job_time"))/60/60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time"))/60/60 + ":" + ((Integer.parseInt(e.get("job_time"))/60)%60 < 10 ? "0" : "") + (Integer.parseInt(e.get("job_time"))/60)%60 + ":" + (Integer.parseInt(e.get("job_time")) % 60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time")) % 60)+"</td>" +
+            htmlContent += "<tr><td>"+e.get("datetime")+"</td>" + "<td>"+(Integer.parseInt(e.get("is_debit")) == 1 ? (Integer.parseInt(e.get("machine_id")) != 0 ? machine_name.substring(0, Math.min(machine_name.length(), 7)) : "") : "(Cr)")+"</td>" + "<td>"+(Integer.parseInt(e.get("rate")) == 0 ? "" : getFormattedAmount(Integer.parseInt(e.get("rate"))))+"</td><" + "<td>"+(Integer.parseInt(e.get("job_time")) == 0 ? "" : (Integer.parseInt(e.get("job_time"))/60/60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time"))/60/60 + ":" + ((Integer.parseInt(e.get("job_time"))/60)%60 < 10 ? "0" : "") + (Integer.parseInt(e.get("job_time"))/60)%60 + ":" + (Integer.parseInt(e.get("job_time")) % 60 < 10 ? "0" : "") + Integer.parseInt(e.get("job_time")) % 60)+"</td>" +
                     "<td>"+(Integer.parseInt(e.get("is_debit")) == 1 ? getFormattedAmount(-(Integer.parseInt(e.get("amount")))) : getFormattedAmount(Integer.parseInt(e.get("amount"))))+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("member_store")))+"</td>" + "<td>"+getFormattedAmount(Integer.parseInt(e.get("pocket_store")))+"</td>" +
                     "<td>"+getFormattedAmount(Integer.parseInt(e.get("member_store")) + Integer.parseInt(e.get("pocket_store")))+"</td></tr>";
         }
@@ -277,7 +278,7 @@ public class U {
                         new TimerTask() {
                             @Override
                             public void run() {
-                                if(currentFrame != Frame.JobInProgress)
+                                if(currentFrame != Frame.JobInProgress && currentFrame != Frame.FilterAlarm && currentFrame != Frame.Maintainance)
                                     setCurrentFrame(Frame.JobInProgress);
                             }
                         },
@@ -285,14 +286,15 @@ public class U {
                 );
             }
         } else {
-            if(currentFrame == Frame.JobStarting || currentFrame == Frame.JobInProgress) {
+            if(currentFrame == Frame.JobStarting || currentFrame == Frame.JobInProgress || currentFrame == Frame.FilterAlarm) {
 
                 jobTime = System.currentTimeMillis() - timerStart;
                 timerStart = 0;
                 data = ConnectionManager.finaliseJob(currentRFID, "" + (jobTime / 1000));
 
-                setCurrentFrame(Frame.JobComplete);
-                new java.util.Timer().schedule(
+                if(currentFrame != Frame.FilterAlarm) {
+                    setCurrentFrame(Frame.JobComplete);
+                    new java.util.Timer().schedule(
                         new TimerTask() {
                             @Override
                             public void run() {
@@ -301,7 +303,8 @@ public class U {
                             }
                         },
                         6000
-                );
+                    );
+                }
             }
         }
     }
@@ -338,6 +341,8 @@ public class U {
                 GPIOHandler.writeFilterAlarmState(1);
                 meta = ConnectionManager.getMeta();
                 setCurrentFrame(Frame.FilterAlarm);
+                // artificial job end.
+                triggerFilterPinChanged(0);
 
                 new java.util.Timer().schedule(
                     new TimerTask() {
