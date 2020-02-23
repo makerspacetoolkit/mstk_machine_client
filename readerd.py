@@ -126,13 +126,25 @@ def read_rfid_gpio():
     #read filter sense pin (inverted because of pullup) and current          
     filter_pin_state = int(not GPIO.input(air_filter_sense)) 
    # print(filter_pin_state)
-    if filter_pin_state and alarm_state is not 1: # and jobtime is over n?
-       tstate = turbine_state() 
-       print (' tstate is %s ' % tstate)
+    # if we're not in an alarm_state during a job, take a reading and evaluate.
+    if filter_pin_state == 1 and alarm_state != 1:
+       tstate = turbine_state()
+       print (' turbine state is %s ' % tstate)
        if tstate == 0:
-          print(client.request('echo', {"filter_alarm":"1"}))
-    if previous_sense_state != filter_pin_state:
-   #    print(client.request('echo', {"job":job_state}))
+          #print('first try')
+          # let's give the turbine a second to spin up.
+          time.sleep(1)
+          # check again just to be sure
+          tstate = turbine_state()
+          if tstate == 0:
+             #print('second try')
+             response = client.request('echo', {"filter_alarm":"1"})
+             # if we're sure the UI got the message, reset alarm_state and filter sense pin
+             if response['filter_alarm']  == '1':
+                GPIO.setup(air_filter_sense, GPIO.IN, GPIO.PUD_UP)
+                alarm_state = 0
+
+    if previous_sense_state != filter_pin_state and tstate is 1:
         print(client.request('echo', {"job":str(filter_pin_state)}))
     previous_sense_state =  filter_pin_state
     # add extra filter time
@@ -163,6 +175,7 @@ def debug_message(current_log_level, message_level, message):
 
 @app.route('/client', methods = ['POST'])
 def accept_card_uid():
+    global alarm_state
     if request.method == 'POST':
         #print("this is a POST")
         try:
@@ -179,10 +192,10 @@ def accept_card_uid():
            if job_state == "1" or "0":
                print(client.request('echo', {"job":job_state}))
                if job_state == "1":
-                  print('state is 1') 
+                  print('job state is 1')
                   GPIO.setup(air_filter_sense, GPIO.IN, GPIO.PUD_DOWN)
                else:
-                  print('state is 0') 
+                  print('job state is 0')
                   GPIO.setup(air_filter_sense, GPIO.IN, GPIO.PUD_UP)
                # for quick and dirty testing of interlockd, uncomment and change port
                #print(client.request('echo', {"pin":job_state}))
@@ -222,24 +235,3 @@ if __name__ == '__main__':
 
   teardown()
   print('goodbye')
-
-
-_thread.start_new_thread(read_rfid_gpio,())
-   
-if __name__ == '__main__':
-  setup()
-  app.run(
-
-        host="0.0.0.0",
-        port=int("7000"),
-  )
-  try:
-    for line in sys.stdin:
-       if line.strip() == 'exit':
-          break
-  except KeyboardInterrupt:
-     pass
-
-  teardown()
-  print('goodbye')
-
