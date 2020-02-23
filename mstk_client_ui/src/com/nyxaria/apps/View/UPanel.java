@@ -333,7 +333,7 @@ public class UPanel extends JPanel {
         JPanel contentWrap = new JPanel(new GridBagLayout());
         contentWrap.setPreferredSize(new Dimension(UFrame.WIDTH-200, (int) contentWrap.getPreferredSize().getHeight()));
 
-        ULabel contentLabel = new ULabel("Job " + U.getJobID() + " complete: " + U.getMachineTime() + " / " + U.getFinalCost(), mediumFont);
+        ULabel contentLabel = new ULabel("Job complete: " + U.getMachineTime() + " / " + U.getFinalCost(), mediumFont);
 
         contentWrap.add(contentLabel);
 
@@ -426,7 +426,6 @@ public class UPanel extends JPanel {
 
         UButton okButton = new UButton("OK");
 
-        okButton.addActionListener(e -> U.finaliseSignout());
         okButton.addActionListener(e -> U.triggerFilterAlarm(false));
         okButton.addActionListener(e -> U.triggerInService(false));
 

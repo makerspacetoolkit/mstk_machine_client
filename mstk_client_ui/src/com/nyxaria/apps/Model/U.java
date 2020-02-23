@@ -278,7 +278,7 @@ public class U {
                         new TimerTask() {
                             @Override
                             public void run() {
-                                if(currentFrame != Frame.JobInProgress)
+                                if(currentFrame != Frame.JobInProgress && currentFrame != Frame.FilterAlarm && currentFrame != Frame.Maintainance)
                                     setCurrentFrame(Frame.JobInProgress);
                             }
                         },
@@ -286,14 +286,15 @@ public class U {
                 );
             }
         } else {
-            if(currentFrame == Frame.JobStarting || currentFrame == Frame.JobInProgress) {
+            if(currentFrame == Frame.JobStarting || currentFrame == Frame.JobInProgress || currentFrame == Frame.FilterAlarm) {
 
                 jobTime = System.currentTimeMillis() - timerStart;
                 timerStart = 0;
                 data = ConnectionManager.finaliseJob(currentRFID, "" + (jobTime / 1000));
 
-                setCurrentFrame(Frame.JobComplete);
-                new java.util.Timer().schedule(
+                if(currentFrame != Frame.FilterAlarm) {
+                    setCurrentFrame(Frame.JobComplete);
+                    new java.util.Timer().schedule(
                         new TimerTask() {
                             @Override
                             public void run() {
@@ -302,7 +303,8 @@ public class U {
                             }
                         },
                         6000
-                );
+                    );
+                }
             }
         }
     }
@@ -339,6 +341,8 @@ public class U {
                 GPIOHandler.writeFilterAlarmState(1);
                 meta = ConnectionManager.getMeta();
                 setCurrentFrame(Frame.FilterAlarm);
+                // artificial job end.
+                triggerFilterPinChanged(0);
 
                 new java.util.Timer().schedule(
                     new TimerTask() {
